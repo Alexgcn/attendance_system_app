@@ -25,7 +25,7 @@ r = redis.StrictRedis(host=hostname,
                       port=portnumber,
                       password=password)
 
-# Retrive Data from database
+# Recibir datos de redis
 def retrive_data(name):
     retrive_dict= r.hgetall(name)
     retrive_series = pd.Series(retrive_dict)
@@ -42,31 +42,32 @@ def retrive_data(name):
 
 
 
-# configure face analysis
+# configurar analisis de rostro
 faceapp = FaceAnalysis(name='buffalo_sc',root='insightface_model', providers = ['CPUExecutionProvider'])
 faceapp.prepare(ctx_id = 0, det_size=(640,640), det_thresh = 0.5)
 
-# ML Search Algorithm
+# ML algoritmo de busqueda
 def ml_search_algorithm(dataframe,feature_column,test_vector,
                         name_role=['Name','Role'],thresh=0.5):
     """
     cosine similarity base search algorithm
+    algoritmo de busqueda de similitudes de coseno 
     """
-    # step-1: take the dataframe (collection of data)
+    # paso 1: take the dataframe (collection of data)
     dataframe = dataframe.copy()
-    # step-2: Index face embeding from the dataframe and convert into array
+    # paso 2: Index face embeding from the dataframe and convert into array
     X_list = dataframe[feature_column].tolist()
     x = np.asarray(X_list)
     
-    # step-3: Cal. cosine similarity
+    # paso 3: Cal. cosine similarity
     similar = pairwise.cosine_similarity(x,test_vector.reshape(1,-1))
     similar_arr = np.array(similar).flatten()
     dataframe['cosine'] = similar_arr
 
-    # step-4: filter the data
+    # paso 4: filtrar los datos
     data_filter = dataframe.query(f'cosine >= {thresh}')
     if len(data_filter) > 0:
-        # step-5: get the person name
+        # paso 5: obtener el nombre de la persona
         data_filter.reset_index(drop=True,inplace=True)
         argmax = data_filter['cosine'].argmax()
         person_name, person_role = data_filter.loc[argmax][name_role]

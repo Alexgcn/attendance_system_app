@@ -13,19 +13,18 @@ st.subheader('Reportes')
 # if st.session_state['authentication_status']:
 #     authenticator.logout('Logout', 'sidebar', key='unique_key')
 
-# Retrive logs data and show in Report.py
-# extract data from redis list
+
 name = 'attendance:logs'
 def load_logs(name,end=-1):
-    logs_list = face_rec.r.lrange(name,start=0,end=end) # extract all data from the redis database
+    logs_list = face_rec.r.lrange(name,start=0,end=end) # extrae los datos de redis
     return logs_list
 
-# tabs to show the info
+# apartados para mostrar la informacion
 tab1, tab2, tab3 = st.tabs(['Datos Registrados','Logs','Reportes de Asistencia'])
 
 with tab1:
     if st.button('Actualizar Datos'):
-        # Retrive the data from Redis Database
+        # recibir los datos de la base de datos de redis
         with st.spinner('Retriving Data from Redis DB ...'):
             redis_face_db = face_rec.retrive_data(name='academy:register')
             st.dataframe(redis_face_db[['Name','Role']])
@@ -38,27 +37,27 @@ with tab2:
 with tab3:
     st.subheader('Reportes de Asistencia')
 
-    # load logs into attribute logs_list
+    # cargar atributos del logs en una lista de logs
     logs_list = load_logs(name=name)
 
-    # step -1: convert the logs that in list of bytes into list of string
+    # paso 1: convierte los logs en una lista
     convert_byte_to_string = lambda x: x.decode('utf-8')
     logs_list_string = list(map(convert_byte_to_string, logs_list))
 
-    # step -2: split string by @ and create nested list
+    # paso 2: un @ para una lista anidada
     split_string = lambda x: x.split('@')
     logs_nested_list = list(map(split_string, logs_list_string))
-    # convert nested list info into dataframe
+    
 
     logs_df = pd.DataFrame(logs_nested_list, columns= ['Name','Role','Timestamp'])
 
-    # Step -3 Time based Analysis or Report
+    # paso  3: analisis de reportes 
     #logs_df['Timestamp'] = pd.to_datetime(logs_df['Timestamp'])
     logs_df['Timestamp'] = logs_df['Timestamp'].apply(lambda x: x.split('.')[0])
     logs_df['Timestamp'] = pd.to_datetime(logs_df['Timestamp'])
     logs_df['Date'] = logs_df['Timestamp'].dt.date
 
-    # step -3.1 : Cal. Intime and Outtime
+    # paso 3.1 : Calcular llegada y salida
     # In time: At which person is first detected in that day (min Timestamp of the date)
     # Out time: At which person is last detected in that day (Max Timestamp of the date)
 
@@ -72,7 +71,7 @@ with tab3:
 
     report_df['Duration'] = report_df['Out_time'] - report_df['In_time']
 
-    # Step 4: Marking Person is Present or Absent
+    # paso 4: marca si esta presente o ausente la persona
     all_dates = report_df['Date'].unique()
     name_role = report_df[['Name','Role']].drop_duplicates().values.tolist()
 
@@ -82,7 +81,7 @@ with tab3:
             date_name_rol_zip.append([dt, name, role])
 
     date_name_rol_zip_df = pd.DataFrame(date_name_rol_zip, columns=['Date','Name','Role'])
-    # left join with report_df
+    # 
 
     date_name_rol_zip_df = pd.merge(date_name_rol_zip_df, report_df, how='left',on=['Date','Name','Role'])
 
@@ -111,10 +110,10 @@ with tab3:
     date_name_rol_zip_df['Status'] = date_name_rol_zip_df['Duration_hours'].apply(status_marker)
 
     # tab
-    t1, t2 = st.tabs(['Complete Report','Filter Report'])
+    t1, t2 = st.tabs(['Reporte completo','Filtrar reporte'])
 
     with t1:
-        st.subheader('Complete Report')
+        st.subheader('Reporte completo')
         st.dataframe(date_name_rol_zip_df)
 
     with t2:
@@ -128,7 +127,7 @@ with tab3:
         name_list = date_name_rol_zip_df['Name'].unique().tolist()
         name_in = st.selectbox('Seleccionar nombre', ['ALL']+name_list)
 
-        # Filter Teachers or Students (role)
+        # Filter rol
         role_list = date_name_rol_zip_df['Role'].unique().tolist()
         role_in = st.selectbox('Seleccionar Rol', ['ALL']+role_list)
 

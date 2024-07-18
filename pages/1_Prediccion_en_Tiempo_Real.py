@@ -17,16 +17,14 @@ st.success("Los datos se han recuperado correctamente de REdis")
 # time 
 waitTime = 2 # time in sec
 setTime = time.time()
-realtimepred = face_rec.RealTimePred() # real time prediction class
+realtimepred = face_rec.RealTimePred() # Clase prediccion en tiempo real
 
-# Real Time Prediction
-# streamlit webrtc
-# callback function
+# Prediccion en tiempo real
 def video_frame_callback(frame):
     global setTime
     
-    img = frame.to_ndarray(format="bgr24") # 3 dimension numpy array
-    # operation that you can perform on the array
+    img = frame.to_ndarray(format="bgr24") 
+
     pred_img = realtimepred.face_prediction(img,redis_face_db,
                                         'facial_features',['Name','Role'],thresh=0.5)
     
@@ -34,7 +32,7 @@ def video_frame_callback(frame):
     difftime = timenow - setTime
     if difftime >= waitTime:
         realtimepred.savelogs_redis()
-        setTime = time.time() # reset time        
+        setTime = time.time() # reset time      
         print('Guardar los datos en la base de datos de Redis')
     
 

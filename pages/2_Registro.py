@@ -10,15 +10,14 @@ import av
 
 st.subheader('Registro')
 
-## init registration form
+## iniciar registro
 registration_form = face_rec.RegistrationForm()
 
-# step-2: Collect facial embedding of that person
+# paso 2: colectar las facciones de rostor de la persona y guardarlas en face_embedding.txt
 def video_callback_func(frame):
     img = frame.to_ndarray(format='bgr24') # 3d array bgr
     reg_img, embedding = registration_form.get_embedding(img)
-    # two step process
-    # 1st step save data into local computer txt
+
     if embedding is not None:
         with open('face_embedding.txt',mode='ab') as f:
             np.savetxt(f,embedding)
@@ -26,11 +25,11 @@ def video_callback_func(frame):
     return av.VideoFrame.from_ndarray(reg_img,format='bgr24')
 
 
-####### Registration Form ##########
+####### Registro  ##########
 with st.container(border=True):
     name = st.text_input(label='Nombre',placeholder='Ingrese Nombre y Apellido')
     role = st.selectbox(label='Rol', placeholder='Seleccionar Rol', options=('--select--',
-                                                                          'Empleado', 'Encargado', 'Auxiliar', 'Invitado','Teacher','Student'))
+                                                                          'Empleado', 'Encargado', 'Auxiliar', 'Invitado','Maestro','Estudiante'))
     course = st.selectbox(label='Selecionar Sucursal', placeholder='Selecionar Sucursal',
                           options=('--select--','Victoria',
                                    'Mante','Reynosa'))
@@ -54,7 +53,7 @@ with st.container(border=True):
 
 
 
-# step-3: save the data in redis database
+# paso 3: guerdar en la base de datos redis
 
 
 if st.button('Enviar'):
