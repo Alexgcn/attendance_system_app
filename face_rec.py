@@ -17,15 +17,15 @@ import os
 
 
 # Connect to Redis Client
-hostname = 'redis-14150.c262.us-east-1-3.ec2.redns.redis-cloud.com'
-portnumber = 14150
-password = '7zWY2SNFb1dIh3TCNR8ZsIB2DvKVzNw4'
+hostname = 'redis-14157.c93.us-east-1-3.ec2.redns.redis-cloud.com'
+portnumber = 14157
+password = 'mYg0LNzRkghWY73SXRjiSopDVCtSdVJl'
 
 r = redis.StrictRedis(host=hostname,
                       port=portnumber,
                       password=password)
 
-# Recibir datos de redis
+# Retrive Data from database
 def retrive_data(name):
     retrive_dict= r.hgetall(name)
     retrive_series = pd.Series(retrive_dict)
